@@ -80,17 +80,29 @@ TypeScript: `npx tsc --noEmit` passes.
 
 ---
 
-## Addendum: Faculty delete blocked by RLS
+## Addendum: Faculty delete blocked by RLS — RESOLVED ✅
 
 **Symptom:** `DELETE /api/users/:id` returned success but the user remained in the database.
 
 **Cause:** The `users` table has RLS enabled with SELECT/INSERT policies only — no DELETE policy. Supabase filters the delete to 0 rows without raising an error.
 
-**Fix:** Run in the Supabase SQL Editor (Dashboard → SQL Editor):
+**Fix (applied):** Run in the Supabase SQL Editor (Dashboard → SQL Editor):
 
 ```sql
 CREATE POLICY "Allow authenticated delete on users" ON users
     FOR DELETE USING (true);
 ```
 
-This policy is also included in `supabase/schema.sql` for fresh setups.
+This policy is also included in `supabase/schema.sql` for fresh setups. The route now
+detects 0-row deletes and returns a clear error instead of a false success.
+Verified working on production (2026-08-22): create → delete → user gone.
+
+---
+
+## Production
+
+- **Live URL:** https://fresher-s-counter.vercel.app
+- **Repo:** https://github.com/gsraj0301/fresher-s-counter
+- Vercel env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `JWT_SECRET`
+- Per-deployment preview URLs may be SSO-protected ("Protected deployment" 401);
+  the production domain above is public.

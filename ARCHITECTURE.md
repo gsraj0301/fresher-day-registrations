@@ -36,11 +36,12 @@ A web application for managing student headcount across departments during Fresh
                        │
                        ▼
 ┌──────────────────────────────────────────────────┐
-│              MIDDLEWARE (JWT Verification)        │
+│               PROXY (JWT Verification)            │
 │                                                   │
+│  src/proxy.ts (Next.js 16 proxy convention)       │
 │  Verify token on every request                    │
-│  Redirect unauthorized to /login                 │
-│  Role-based route protection                     │
+│  Redirect unauthorized to /                       │
+│  Role-based route protection                      │
 │                                                   │
 └──────────────────────┬────────────────────────────┘
                        │
@@ -53,6 +54,7 @@ A web application for managing student headcount across departments during Fresh
 │  /api/auth/logout  → Clear JWT cookie             │
 │  /api/counts       → CRUD for student counts      │
 │  /api/users        → Create/manage faculty        │
+│  /api/users/[id]   → Delete faculty (admin)       │
 │  /api/sections     → List sections                │
 │                                                   │
 └──────────────────────┬────────────────────────────┘
@@ -127,14 +129,18 @@ A web application for managing student headcount across departments during Fresh
 - **Security**: HttpOnly, SameSite=Lax, Path=/
 - **Not accessible via JavaScript** (prevents XSS)
 
-### Middleware Protection
+### Proxy Protection
 
-Every request goes through middleware that:
-1. Extracts JWT from cookie
+Every request goes through `src/proxy.ts` (Next.js 16 replaced `middleware.ts` with the proxy convention — the file must export a function named `proxy`) that:
+1. Extracts JWT from the raw `Cookie` header
 2. Verifies signature against `JWT_SECRET`
 3. Checks token expiry
 4. Validates user role for route access
 5. Redirects unauthorized users to login
+
+> **Next.js 16 note:** Inside Route Handlers, `cookies()` from `next/headers` returns nothing and even
+> `request.cookies.get()` throws — cookies must be parsed from `request.headers.get('cookie')`
+> manually (see `getTokenFromRequest` in `src/lib/token.ts`). Details in FIX.md.
 
 ### Password Security
 
@@ -290,43 +296,50 @@ CREATE TABLE sections (
 ## Project Structure
 
 ```
-fresher's_counter/
-├── .env.local                    # Supabase + JWT credentials
+fresher-s-counter/
+├── .env.local                    # Supabase + JWT credentials (not committed)
+├── .env.example                  # Template for required env vars
 ├── next.config.ts                # Next.js configuration
 ├── package.json                  # Dependencies
 ├── tsconfig.json                 # TypeScript config
 ├── ARCHITECTURE.md               # This file
 ├── PHASE.md                      # Implementation plan
+├── FIX.md                        # Bug fixes & Next.js 16 gotchas
 ├── supabase/
-│   ├── schema.sql                # Database schema
-│   └── seed.js                   # Seed script
+│   ├── schema.sql                # Database schema + RLS policies
+│   └── seed.js                   # Admin seed script (env-driven)
 ├── public/                       # Static assets
 │   └── ...
 ├── src/
 │   ├── app/                      # Next.js App Router
 │   │   ├── layout.tsx            # Root layout
 │   │   ├── page.tsx              # Login page
-│   │   ├── globals.css           # Global styles
+│   │   ├── globals.css           # Global styles + animations
 │   │   ├── dashboard/
-│   │   │   └── page.tsx          # Admin dashboard
+│   │   │   └── page.tsx          # Admin dashboard (counts + faculty mgmt)
 │   │   ├── faculty/
-│   │   │   └── page.tsx          # Faculty page
+│   │   │   └── page.tsx          # Faculty page (own section count)
 │   │   └── api/                  # API routes
 │   │       ├── auth/
 │   │       │   ├── login/route.ts    # Login + JWT issue
 │   │       │   ├── me/route.ts       # Get current user
 │   │       │   └── logout/route.ts   # Clear JWT
-│   │       ├── counts/route.ts
-│   │       ├── users/route.ts
-│   │       └── sections/route.ts
-│   ├── components/               # Reusable components
+│   │       ├── counts/route.ts       # GET all / POST upsert
+│   │       ├── users/route.ts        # GET list / POST create faculty
+│   │       ├── users/[id]/route.ts   # DELETE faculty (admin)
+│   │       └── sections/route.ts     # GET list sections
+│   ├── components/
+│   │   ├── CountsTable.tsx       # Admin editable counts table
+│   │   ├── FacultyCounts.tsx     # Faculty section count editor
+│   │   ├── CreateFacultyModal.tsx# Faculty creation modal
+│   │   └── Footer.tsx            # Global footer
 │   ├── config/
-│   │   └── departments.js        # Department data
+│   │   └── departments.js        # DEPARTMENTS, DEPT_SHORT, DEPT_SECTIONS
 │   ├── lib/
-│   │   ├── supabase.ts           # Supabase client
-│   │   ├── auth.ts               # Auth utilities
-│   │   └── token.ts              # JWT utilities
-│   └── middleware.ts             # Route protection
+│   │   ├── supabase.ts           # Supabase client + types
+│   │   ├── auth.ts               # Auth utilities, FACULTY_DEFAULT_PASSWORD
+│   │   └── token.ts              # JWT utilities + getTokenFromRequest
+│   └── proxy.ts                  # Route protection (Next.js 16 proxy)
 ```
 
 ---
@@ -340,6 +353,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 
 # JWT
 JWT_SECRET=your-secret-key-here
+
+# Optional — shared password for new faculty accounts
+FACULTY_DEFAULT_PASSWORD=freshers@3128
+
+# Seed script only (supabase/seed.js)
+ADMIN_EMAIL=admin@college.edu
+ADMIN_PASSWORD=...
+ADMIN_NAME=Admin
 ```
 
 ---
@@ -350,7 +371,7 @@ JWT_SECRET=your-secret-key-here
 - **JWT Tokens**: Signed with HMAC-SHA256
 - **HTTP-only Cookies**: Prevent XSS attacks
 - **SameSite=Lax**: CSRF protection
-- **Role-based Access**: Middleware enforces route permissions
+- **Role-based Access**: Proxy enforces route permissions
 - **Environment Variables**: Secrets never committed to repo
 - **Token Expiry**: 2-day automatic logout
 
@@ -358,10 +379,17 @@ JWT_SECRET=your-secret-key-here
 
 ## Deployment
 
-1. Push code to GitHub repository
+**Status: Deployed ✅ — https://fresher-s-counter.vercel.app**
+
+1. Push code to GitHub repository (gsraj0301/fresher-s-counter)
 2. Connect repository to Vercel
 3. Configure environment variables in Vercel dashboard:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `JWT_SECRET` (generate a strong random string)
 4. Deploy automatically on push to main branch
+
+> Vercel's per-deployment URLs (e.g. `<project>-<hash>-<team>.vercel.app`) may be
+> SSO-protected; the production domain `fresher-s-counter.vercel.app` is public.
+> If Deployment Protection blocks public visitors, disable it under
+> Project → Settings → Deployment Protection.

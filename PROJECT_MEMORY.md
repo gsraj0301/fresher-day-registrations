@@ -7,6 +7,8 @@
 
 ## Current Status
 
+**Deployed ✅ — https://fresher-s-counter.vercel.app** (repo: gsraj0301/fresher-s-counter)
+
 | Phase | Status |
 |-------|--------|
 | 1. Scaffolding | ✅ Complete |
@@ -16,6 +18,9 @@
 | 5. Faculty Page | ✅ Complete |
 | 6. API Routes (counts, users, sections) | ✅ Complete |
 | 7. Documentation | ✅ Complete |
+| 8. Deployment (Vercel) | ✅ Live |
+
+**Vercel env vars set:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `JWT_SECRET` (generated via `openssl rand -base64 32`).
 
 ---
 
@@ -73,33 +78,34 @@
 ```
 src/
 ├── app/
-│   ├── layout.tsx              # Root layout (with Footer)
-│   ├── page.tsx                # Login page (client component)
-│   ├── globals.css             # Tailwind + custom vars
+│   ├── layout.tsx                # Root layout (with Footer)
+│   ├── page.tsx                  # Login page (client component)
+│   ├── globals.css               # Tailwind + custom vars + animations
 │   ├── api/auth/
-│   │   ├── login/route.ts      # POST - authenticate + issue JWT
-│   │   ├── me/route.ts         # GET - verify JWT, return user
-│   │   └── logout/route.ts     # POST - clear JWT cookie
+│   │   ├── login/route.ts        # POST - authenticate + issue JWT
+│   │   ├── me/route.ts           # GET - verify JWT, return user
+│   │   └── logout/route.ts       # POST - clear JWT cookie
 │   ├── api/
-│   │   ├── counts/route.ts     # GET/POST - fetch/upsert counts
-│   │   ├── users/route.ts      # GET/POST - list/create faculty
-│   │   └── sections/route.ts   # GET - list all sections
-│   ├── dashboard/page.tsx      # Admin dashboard (with counts + faculty)
-│   └── faculty/page.tsx        # Faculty dashboard (edit own section)
+│   │   ├── counts/route.ts       # GET/POST - fetch/upsert counts
+│   │   ├── users/route.ts        # GET/POST - list/create faculty
+│   │   ├── users/[id]/route.ts   # DELETE - remove faculty (admin)
+│   │   └── sections/route.ts     # GET - list all sections
+│   ├── dashboard/page.tsx        # Admin dashboard (counts + faculty mgmt)
+│   └── faculty/page.tsx          # Faculty dashboard (edit own section)
 ├── components/
-│   ├── CountsTable.tsx         # Editable counts table (admin)
-│   ├── CreateFacultyModal.tsx  # Modal to create faculty
-│   ├── FacultyCounts.tsx       # Faculty section count editor
-│   └── Footer.tsx              # Global footer
-├── config/departments.js       # DEPARTMENTS, DEPT_SHORT, DEPT_SECTIONS
+│   ├── CountsTable.tsx           # Editable counts table (admin)
+│   ├── CreateFacultyModal.tsx    # Modal to create faculty (no password field)
+│   ├── FacultyCounts.tsx         # Faculty section count editor
+│   └── Footer.tsx                # Global footer
+├── config/departments.js         # DEPARTMENTS, DEPT_SHORT, DEPT_SECTIONS
 ├── lib/
-│   ├── supabase.ts             # Supabase client + TypeScript types
-│   ├── auth.ts                 # loginUser, createUser, hashPassword
-│   └── token.ts                # generateToken, verifyToken (JWT, 2-day expiry)
-├── middleware.ts                # Route protection, role-based redirects
+│   ├── supabase.ts               # Supabase client + TypeScript types
+│   ├── auth.ts                   # loginUser, createUser, hashPassword, FACULTY_DEFAULT_PASSWORD
+│   └── token.ts                  # generateToken, verifyToken, getTokenFromRequest
+├── proxy.ts                       # Route protection (Next.js 16 proxy convention)
 supabase/
-├── schema.sql                  # Full DB schema + section seeds
-└── seed.js                     # Node script to seed admin user
+├── schema.sql                    # Full DB schema + RLS policies + section seeds
+└── seed.js                       # Node script to seed admin user (env-driven)
 ```
 
 ---
@@ -117,8 +123,8 @@ npm run dev
 1. User submits email + password on `/` (login page)
 2. `POST /api/auth/login` validates credentials via Supabase
 3. Server generates JWT (2-day expiry) with user payload
-4. Token set as httpOnly cookie via `cookies().set()` (Next.js 16 compatible)
-5. Middleware verifies JWT on every request
+4. Token set as httpOnly cookie via `NextResponse` + `response.cookies.set()`
+5. `src/proxy.ts` verifies JWT on every request (parses raw Cookie header)
 6. Admin → redirected to `/dashboard`, Faculty → redirected to `/faculty`
 7. Protected routes redirect to `/` if no valid token
 
@@ -133,16 +139,18 @@ npm run dev
 
 ---
 
-## All Phases Complete!
+## All Phases Complete — Deployed!
 
-The application is fully functional with:
+The application is live at **https://fresher-s-counter.vercel.app** with:
 - Login page with JWT authentication
-- Admin dashboard with full counts table + faculty management
-- Faculty dashboard with section-specific count editing
+- Admin dashboard with full counts table + faculty management (create + delete)
+- Faculty dashboard with section-specific count editing (with error feedback)
 - Global footer on all pages ("Build by Raj G AI DS II")
 
 ### Bug Fixes Applied:
 - Fixed login redirect loop: Route Handlers must parse the raw `Cookie` header (`request.cookies` throws in Next.js 16); see FIX.md
+- Migrated `middleware.ts` → `proxy.ts` (Next.js 16 convention)
+- Faculty deletion requires a Supabase RLS DELETE policy on `users` (see FIX.md)
 
 ### Potential Enhancements:
 - Real-time updates with Supabase subscriptions

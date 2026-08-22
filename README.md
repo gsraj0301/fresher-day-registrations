@@ -4,6 +4,8 @@ A web application for managing student headcount across departments during a col
 
 Admins get a live overview of every department and section; faculty sign in and update the count for their assigned section in one place.
 
+**Live: [fresher-s-counter.vercel.app](https://fresher-s-counter.vercel.app)**
+
 ## Features
 
 - **JWT authentication** — bcrypt-hashed passwords, httpOnly cookie sessions (2-day expiry)
@@ -92,10 +94,18 @@ More detail in [ARCHITECTURE.md](./ARCHITECTURE.md); implementation notes in [PH
 
 ## Deploying to Vercel
 
+**Already deployed ✅ — https://fresher-s-counter.vercel.app** (auto-deploys on push to `main`).
+
+For a fresh deployment:
+
 1. Push this repo to GitHub
 2. Import it in [Vercel](https://vercel.com/new)
 3. Add the environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `JWT_SECRET`)
 4. Deploy
+
+> Per-deployment URLs (`<project>-<hash>-<team>.vercel.app`) may be SSO-protected;
+> use the production domain, or disable Deployment Protection under
+> Project → Settings → Deployment Protection.
 
 **Important:** In Supabase, restrict database access for production — enable RLS policies appropriate for public deployment and never reuse local development secrets.
 

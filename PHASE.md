@@ -209,15 +209,20 @@ CREATE TABLE sections (
 
 ---
 
-## Deployment
+## Deployment ✅
+
+**Live: https://fresher-s-counter.vercel.app** (repo: gsraj0301/fresher-s-counter)
 
 1. Push to GitHub
 2. Connect repo to Vercel
 3. Add environment variables in Vercel dashboard:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `JWT_SECRET`
-4. Deploy
+   - `JWT_SECRET` (generated via `openssl rand -base64 32`)
+4. Deploy — auto-deploys on every push to main
+
+> Note: per-deployment URLs (`<project>-<hash>-<team>.vercel.app`) may be SSO-protected;
+> the production domain above is public.
 
 ---
 
@@ -232,10 +237,12 @@ CREATE TABLE sections (
 | 5. Faculty Page | ✅ Complete |
 | 6. API Routes | ✅ Complete |
 | 7. Documentation | ✅ Complete |
+| 8. Deployment (Vercel) | ✅ Live |
 
 ---
 
 ## Post-Completion Fixes
 
 See `FIX.md` for the Next.js 16 login redirect-loop fix (Route Handlers must read
-cookies from the raw `Cookie` header; `middleware.ts` migrated to `proxy.ts`).
+cookies from the raw `Cookie` header; `middleware.ts` migrated to `proxy.ts`) and the
+Supabase RLS DELETE policy required for faculty deletion.
