@@ -47,6 +47,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
         }
 
+        if (user.role !== 'admin' && user.role !== 'faculty') {
+            return NextResponse.json({ error: 'Read-only access' }, { status: 403 });
+        }
+
         const { department, section, student_count, additional_count } = await request.json();
 
         if (!department || !section) {

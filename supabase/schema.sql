@@ -14,7 +14,7 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
-    role TEXT NOT NULL CHECK (role IN ('admin', 'faculty')),
+    role TEXT NOT NULL CHECK (role IN ('admin', 'principal', 'hod', 'dean_admission', 'dean_academics', 'faculty')),
     department TEXT,
     section TEXT,
     created_at TIMESTAMPTZ DEFAULT now()

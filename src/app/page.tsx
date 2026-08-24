@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { roleHome } from '@/config/roles';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -30,11 +31,7 @@ export default function LoginPage() {
       }
 
       // Redirect based on role
-      if (data.user.role === 'admin') {
-        router.push('/dashboard');
-      } else {
-        router.push('/faculty');
-      }
+      router.push(roleHome(data.user.role));
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

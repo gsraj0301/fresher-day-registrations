@@ -13,6 +13,10 @@ interface Count {
     updated_at: string;
 }
 
+interface CountsTableProps {
+    readOnly?: boolean;
+}
+
 function relativeTime(iso: string): string {
     const then = new Date(iso).getTime();
     if (Number.isNaN(then)) return '—';
@@ -25,7 +29,7 @@ function relativeTime(iso: string): string {
     return new Date(iso).toLocaleDateString();
 }
 
-export default function CountsTable() {
+export default function CountsTable({ readOnly = false }: CountsTableProps) {
     const [counts, setCounts] = useState<Count[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -137,7 +141,9 @@ export default function CountsTable() {
             <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 className="text-lg font-semibold text-gray-900">Student Headcount</h2>
-                    <p className="text-sm text-gray-500 mt-0.5">Click any row to edit counts inline</p>
+                    <p className="text-sm text-gray-500 mt-0.5">
+                        {readOnly ? 'Live headcount across all departments' : 'Click any row to edit counts inline'}
+                    </p>
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-md px-2.5 py-1.5 tabular-nums">
@@ -179,8 +185,8 @@ export default function CountsTable() {
                                 return (
                                     <tr
                                         key={key}
-                                        onClick={() => !isEditing && handleEdit(count)}
-                                        className={`${startsNewGroup && index !== 0 ? 'border-t-2 border-gray-100' : ''} ${isEditing ? 'bg-blue-50/60' : 'hover:bg-gray-50 cursor-pointer'} transition-colors duration-150`}
+                                        onClick={readOnly ? undefined : () => !isEditing && handleEdit(count)}
+                                        className={`${startsNewGroup && index !== 0 ? 'border-t-2 border-gray-100' : ''} ${isEditing ? 'bg-blue-50/60' : readOnly ? 'hover:bg-gray-50' : 'hover:bg-gray-50 cursor-pointer'} transition-colors duration-150`}
                                     >
                                         <td className="px-6 py-3.5">
                                             <div className="text-sm font-semibold text-gray-900">{deptShort}</div>

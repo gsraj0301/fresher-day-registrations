@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import CountsTable from '@/components/CountsTable';
 import CreateFacultyModal from '@/components/CreateFacultyModal';
 import { DEPT_SHORT } from '@/config/departments';
+import { roleHome, canManageFaculty } from '@/config/roles';
 
 interface User {
     id: string;
@@ -52,6 +53,10 @@ export default function DashboardPage() {
                 return;
             }
             const data = await res.json();
+            if (data.user.role !== 'admin') {
+                router.replace(roleHome(data.user.role));
+                return;
+            }
             setUser(data.user);
         } catch {
             router.replace('/');
@@ -203,7 +208,8 @@ export default function DashboardPage() {
                 {/* Headcount */}
                 <CountsTable />
 
-                {/* Faculty list */}
+                {/* Faculty list (admin only) */}
+                {canManageFaculty(user.role) && (
                 <section className="mt-8 bg-white border border-gray-200 rounded-xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0">
@@ -335,6 +341,7 @@ export default function DashboardPage() {
                         </ul>
                     )}
                 </section>
+                )}
             </main>
 
             {/* Create Faculty Modal */}

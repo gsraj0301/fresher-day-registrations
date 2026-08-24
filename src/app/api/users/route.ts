@@ -17,6 +17,10 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
         }
 
+        if (user.role !== 'admin') {
+            return NextResponse.json({ error: 'Only admins can view users' }, { status: 403 });
+        }
+
         const { data, error } = await supabase
             .from('users')
             .select('id, email, name, role, department, section, created_at')

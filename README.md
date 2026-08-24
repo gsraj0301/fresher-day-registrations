@@ -9,7 +9,7 @@ Admins get a live overview of every department and section; faculty sign in and 
 ## Features
 
 - **JWT authentication** — bcrypt-hashed passwords, httpOnly cookie sessions (2-day expiry)
-- **Role-based access** — admins manage everything; faculty can only edit their own department/section
+- **Role-based access** — admins manage everything (counts + faculty CRUD); leadership roles (`principal`, `hod`, `dean_admission`, `dean_academics`) get a read-only `/overview` dashboard; faculty can only edit their own department/section
 - **Live headcount table** — inline editing (Enter to save, Esc to cancel), computed totals, relative "last updated" timestamps
 - **Faculty management** — create faculty accounts (shared password auto-assigned server-side) and delete them with an inline confirm
 - **10 departments, 14 sections** pre-configured

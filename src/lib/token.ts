@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import type { Role } from '@/config/roles';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? (process.env.NODE_ENV === 'production' ? undefined : 'freshers-day-counter-dev-secret');
 const TOKEN_EXPIRY = '2d';
@@ -19,7 +20,7 @@ export interface TokenPayload {
     id: string;
     email: string;
     name: string;
-    role: 'admin' | 'faculty';
+    role: Role;
     department?: string | null;
     section?: string | null;
 }

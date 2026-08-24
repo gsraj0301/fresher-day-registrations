@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Role } from '@/config/roles';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -15,7 +16,7 @@ export interface Database {
                     email: string;
                     name: string;
                     password_hash: string;
-                    role: 'admin' | 'faculty';
+                    role: Role;
                     department: string | null;
                     section: string | null;
                     created_at: string;
@@ -25,7 +26,7 @@ export interface Database {
                     email: string;
                     name: string;
                     password_hash: string;
-                    role: 'admin' | 'faculty';
+                    role: Role;
                     department?: string | null;
                     section?: string | null;
                     created_at?: string;
@@ -35,7 +36,7 @@ export interface Database {
                     email?: string;
                     name?: string;
                     password_hash?: string;
-                    role?: 'admin' | 'faculty';
+                    role?: Role;
                     department?: string | null;
                     section?: string | null;
                     created_at?: string;
