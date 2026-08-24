@@ -205,13 +205,24 @@ export default function DashboardPage() {
 
                 {/* Faculty list */}
                 <section className="mt-8 bg-white border border-gray-200 rounded-xl overflow-hidden">
-                    <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold text-gray-900">Faculty Members</h2>
-                        {!facultyLoading && faculty.length > 0 && (
-                            <span className="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-1 tabular-nums">
-                                {faculty.length}
-                            </span>
-                        )}
+                    <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <h2 className="text-lg font-semibold text-gray-900">Faculty Members</h2>
+                            {!facultyLoading && faculty.length > 0 && (
+                                <span className="text-xs font-medium text-gray-600 bg-gray-100 rounded-full px-2.5 py-1 tabular-nums">
+                                    {faculty.length}
+                                </span>
+                            )}
+                        </div>
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-150"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Create Faculty
+                        </button>
                     </div>
 
                     {deleteError && (
