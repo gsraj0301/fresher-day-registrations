@@ -56,14 +56,32 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const sc = student_count ?? 0;
+        const ac = additional_count ?? 0;
+        if (sc < 0 || sc > 1000 || ac < 0 || ac > 1000) {
+            return NextResponse.json(
+                { error: 'Counts must be between 0 and 1000' },
+                { status: 400 }
+            );
+        }
+
+        if (user.role === 'faculty') {
+            if (user.department !== department || user.section !== section) {
+                return NextResponse.json(
+                    { error: 'Faculty can only update their assigned section' },
+                    { status: 403 }
+                );
+            }
+        }
+
         const { data, error } = await supabase
             .from('counts')
             .upsert(
                 {
                     department,
                     section,
-                    student_count: student_count || 0,
-                    additional_count: additional_count || 0,
+                    student_count: sc,
+                    additional_count: ac,
                     updated_by: user.id,
                     updated_at: new Date().toISOString()
                 },

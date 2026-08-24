@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken, TokenPayload } from '@/lib/token';
+import { verifyToken, getTokenFromRequest, TokenPayload } from '@/lib/token';
 
 export function proxy(request: NextRequest) {
-  const token = request.cookies.get('token')?.value;
+  const token = getTokenFromRequest(request);
   const { pathname } = request.nextUrl;
 
   // Public routes that don't need auth

@@ -1,4 +1,4 @@
-# FIX.md — Login Redirect Loop on Next.js 16
+# FIX.md — Login Redirect Loop on Next.js 16 + Security Hardening
 
 ## Problem
 
@@ -96,6 +96,40 @@ CREATE POLICY "Allow authenticated delete on users" ON users
 This policy is also included in `supabase/schema.sql` for fresh setups. The route now
 detects 0-row deletes and returns a clear error instead of a false success.
 Verified working on production (2026-08-22): create → delete → user gone.
+
+---
+
+## Addendum: Security Hardening & Bug Fixes (2026-08-24) ✅
+
+### 1. Proxy token extraction fixed
+**Issue:** `src/proxy.ts` used `request.cookies.get('token')` which throws in Next.js 16 Route Handlers.
+**Fix:** Changed to use `getTokenFromRequest(request)` from `@/lib/token` (parses raw `Cookie` header).
+**File:** `src/proxy.ts:6`
+
+### 2. JWT Secret fallback removed in production
+**Issue:** Hardcoded fallback `'freshers-day-counter-dev-secret'` allowed token forgery if `JWT_SECRET` missing.
+**Fix:** Throw error in production if `JWT_SECRET` not set; warn only in development.
+**File:** `src/lib/token.ts:3-14`
+
+### 3. Faculty authorization on counts POST
+**Issue:** Faculty could submit counts for any department/section, not just their assigned one.
+**Fix:** Added role check in `/api/counts` POST — faculty restricted to their own `department` + `section`.
+**File:** `src/app/api/counts/route.ts:55-63`
+
+### 4. Secure cookie flag added
+**Issue:** Login cookie missing `secure: true` in production.
+**Fix:** Added `secure: process.env.NODE_ENV === 'production'` to cookie options.
+**File:** `src/app/api/auth/login/route.ts:50`
+
+### 5. Server-side count validation (0–1000)
+**Issue:** No upper bound on student/additional counts.
+**Fix:** Added validation in API (0–1000) and DB CHECK constraints.
+**Files:** `src/app/api/counts/route.ts:55-63`, `supabase/schema.sql` (student_count/additional_count CHECK)
+
+### 6. Foreign Key: counts → sections
+**Issue:** `counts` had no FK to `sections` — orphan counts possible.
+**Fix:** Added FK constraint in schema and migration file.
+**Files:** `supabase/schema.sql` (FK on counts), `supabase/migration_fk_counts_sections.sql`
 
 ---
 

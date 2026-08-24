@@ -37,12 +37,14 @@ CREATE TABLE counts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     department TEXT NOT NULL,
     section TEXT NOT NULL,
-    student_count INTEGER DEFAULT 0,
-    additional_count INTEGER DEFAULT 0,
+    student_count INTEGER DEFAULT 0 CHECK (student_count >= 0 AND student_count <= 1000),
+    additional_count INTEGER DEFAULT 0 CHECK (additional_count >= 0 AND additional_count <= 1000),
     total INTEGER GENERATED ALWAYS AS (student_count + additional_count) STORED,
     updated_at TIMESTAMPTZ DEFAULT now(),
     updated_by UUID REFERENCES users(id),
-    UNIQUE(department, section)
+    UNIQUE(department, section),
+    FOREIGN KEY (department, section) REFERENCES sections(department, section_name)
+        ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
 -- ============================================
