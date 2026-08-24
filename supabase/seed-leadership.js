@@ -27,14 +27,34 @@ async function main() {
     const passwordHash = await bcrypt.hash(password, 10);
 
     for (const account of LEADERSHIP_ACCOUNTS) {
+        // users table has no UPDATE policy, so upserts on existing rows fail.
+        // Delete any existing row first (nulling count refs to satisfy the FK).
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('email', account.email)
+            .maybeSingle();
+
+        if (existing) {
+            await supabase.from('counts').update({ updated_by: null }).eq('updated_by', existing.id);
+            const { error: deleteError } = await supabase
+                .from('users')
+                .delete()
+                .eq('id', existing.id);
+            if (deleteError) {
+                console.error(`Failed to remove existing ${account.email}:`, deleteError.message);
+                process.exit(1);
+            }
+        }
+
         const { data, error } = await supabase
             .from('users')
-            .upsert({
+            .insert({
                 email: account.email,
                 name: account.name,
                 password_hash: passwordHash,
                 role: account.role
-            }, { onConflict: 'email' })
+            })
             .select('id, email, name, role')
             .single();
 
