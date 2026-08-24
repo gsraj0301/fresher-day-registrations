@@ -54,6 +54,12 @@ Fill in your Supabase URL/anon key and set `ADMIN_EMAIL` / `ADMIN_PASSWORD`, the
 node supabase/seed.js
 ```
 
+To seed the read-only leadership accounts (principal, HOD, deans), first run `supabase/migration_leadership_roles.sql` in the Supabase SQL Editor, then:
+
+```bash
+node supabase/seed-leadership.js
+```
+
 ### 4. Run the dev server
 
 ```bash

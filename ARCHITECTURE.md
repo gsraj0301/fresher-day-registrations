@@ -30,6 +30,11 @@ A web application for managing student headcount across departments during Fresh
 │  │   Page   │  │Dashboard │  │   Page   │      │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘      │
 │       │              │              │             │
+│       │         ┌────▼─────┐        │             │
+│       │         │Leadership│        │             │
+│       │         │ Overview │        │             │
+│       │         │(/overview)│       │             │
+│       │         └────┬─────┘        │             │
 │       └──────────────┼──────────────┘             │
 │                      │                            │
 └──────────────────────┼────────────────────────────┘
@@ -114,7 +119,7 @@ A web application for managing student headcount across departments during Fresh
   "id": "uuid",
   "email": "user@college.edu",
   "name": "User Name",
-  "role": "admin | faculty",
+  "role": "admin | principal | hod | dean_admission | dean_academics | faculty",
   "department": "Computer Science & Engineering",
   "section": "A",
   "iat": 1787303306,
@@ -135,12 +140,28 @@ Every request goes through `src/proxy.ts` (Next.js 16 replaced `middleware.ts` w
 1. Extracts JWT from the raw `Cookie` header
 2. Verifies signature against `JWT_SECRET`
 3. Checks token expiry
-4. Validates user role for route access
-5. Redirects unauthorized users to login
+4. Resolves the user's home route from role (`roleHome` in `src/config/roles.ts`): admin → `/dashboard`, leadership → `/overview`, faculty → `/faculty`
+5. Redirects users who request pages outside their own home route prefix (`/api/*` allowed for all — authorization enforced per-endpoint)
+6. Redirects unauthenticated users to login
 
 > **Next.js 16 note:** Inside Route Handlers, `cookies()` from `next/headers` returns nothing and even
 > `request.cookies.get()` throws — cookies must be parsed from `request.headers.get('cookie')`
 > manually (see `getTokenFromRequest` in `src/lib/token.ts`). Details in FIX.md.
+
+### Roles & Access
+
+Single source of truth: `src/config/roles.ts`.
+
+| Role | Home route | Counts view | Edit counts | Manage faculty |
+|------|-----------|-------------|-------------|----------------|
+| admin | `/dashboard` | All departments | ✅ Any section | ✅ |
+| principal | `/overview` | All departments | ❌ (read-only) | ❌ |
+| hod (S&H HOD) | `/overview` | All departments | ❌ (read-only) | ❌ |
+| dean_admission | `/overview` | All departments | ❌ (read-only) | ❌ |
+| dean_academics | `/overview` | All departments | ❌ (read-only) | ❌ |
+| faculty | `/faculty` | Own section only | ✅ Own section only | ❌ |
+
+Leadership accounts are seeded via `supabase/seed-leadership.js`; there are no hardcoded emails in application code.
 
 ### Password Security
 
@@ -172,24 +193,25 @@ Generate JWT token (2-day expiry)
 Set httpOnly cookie with token
         │
         ▼
-Redirect: admin → /dashboard, faculty → /faculty
+Redirect by role (roleHome):
+admin → /dashboard, leadership → /overview, faculty → /faculty
 ```
 
 ### Protected Route Flow
 ```
-Request to /dashboard or /faculty
+Request to /dashboard, /overview or /faculty
         │
         ▼
-Middleware intercepts
+Proxy intercepts
         │
         ▼
-Extract JWT from cookie
+Extract JWT from Cookie header
         │
         ▼
 Verify token signature + expiry
         │
         ▼
-Check user role matches route
+Resolve role home route; redirect if path outside it
         │
         ▼
 Allow or redirect
@@ -203,11 +225,13 @@ Faculty enters counts
 POST /api/counts (with JWT)
         │
         ▼
-Middleware verifies JWT
+Route handler verifies JWT + role
+(faculty restricted to own dept/section,
+ leadership rejected 403, counts 0–1000)
         │
         ▼
 Upsert into counts table
-(department + section unique)
+(department + section unique, FK to sections)
         │
         ▼
 Return updated count
@@ -241,7 +265,7 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   password_hash TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'faculty')),
+  role TEXT NOT NULL CHECK (role IN ('admin', 'principal', 'hod', 'dean_admission', 'dean_academics', 'faculty')),
   department TEXT,
   section TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
@@ -254,12 +278,13 @@ CREATE TABLE counts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   department TEXT NOT NULL,
   section TEXT NOT NULL,
-  student_count INTEGER DEFAULT 0,
-  additional_count INTEGER DEFAULT 0,
+  student_count INTEGER DEFAULT 0 CHECK (student_count >= 0 AND student_count <= 1000),
+  additional_count INTEGER DEFAULT 0 CHECK (additional_count >= 0 AND additional_count <= 1000),
   total INTEGER GENERATED ALWAYS AS (student_count + additional_count) STORED,
   updated_at TIMESTAMPTZ DEFAULT now(),
   updated_by UUID REFERENCES users(id),
-  UNIQUE(department, section)
+  UNIQUE(department, section),
+  FOREIGN KEY (department, section) REFERENCES sections(department, section_name)
 );
 ```
 
@@ -307,16 +332,21 @@ fresher-s-counter/
 ├── FIX.md                        # Bug fixes & Next.js 16 gotchas
 ├── supabase/
 │   ├── schema.sql                # Database schema + RLS policies
-│   └── seed.js                   # Admin seed script (env-driven)
+│   ├── seed.js                   # Admin seed script (env-driven)
+│   ├── seed-leadership.js        # Seeds principal/HOD/dean accounts
+│   ├── migration_leadership_roles.sql  # Adds leadership roles to CHECK constraint
+│   └── migration_fk_counts_sections.sql# Adds FK counts → sections
 ├── public/                       # Static assets
 │   └── ...
 ├── src/
 │   ├── app/                      # Next.js App Router
-│   │   ├── layout.tsx            # Root layout
+│   │   ├── layout.tsx            # Root layout (sticky footer via flex)
 │   │   ├── page.tsx              # Login page
 │   │   ├── globals.css           # Global styles + animations
 │   │   ├── dashboard/
 │   │   │   └── page.tsx          # Admin dashboard (counts + faculty mgmt)
+│   │   ├── overview/
+│   │   │   └── page.tsx          # Leadership read-only dashboard
 │   │   ├── faculty/
 │   │   │   └── page.tsx          # Faculty page (own section count)
 │   │   └── api/                  # API routes
@@ -324,17 +354,18 @@ fresher-s-counter/
 │   │       │   ├── login/route.ts    # Login + JWT issue
 │   │       │   ├── me/route.ts       # Get current user
 │   │       │   └── logout/route.ts   # Clear JWT
-│   │       ├── counts/route.ts       # GET all / POST upsert
-│   │       ├── users/route.ts        # GET list / POST create faculty
+│   │       ├── counts/route.ts       # GET all / POST upsert (role-checked)
+│   │       ├── users/route.ts        # GET list / POST create (admin only)
 │   │       ├── users/[id]/route.ts   # DELETE faculty (admin)
 │   │       └── sections/route.ts     # GET list sections
 │   ├── components/
-│   │   ├── CountsTable.tsx       # Admin editable counts table
+│   │   ├── CountsTable.tsx       # Counts table (readOnly prop for overview)
 │   │   ├── FacultyCounts.tsx     # Faculty section count editor
 │   │   ├── CreateFacultyModal.tsx# Faculty creation modal
 │   │   └── Footer.tsx            # Global footer
 │   ├── config/
-│   │   └── departments.js        # DEPARTMENTS, DEPT_SHORT, DEPT_SECTIONS
+│   │   ├── departments.js        # DEPARTMENTS, DEPT_SHORT, DEPT_SECTIONS
+│   │   └── roles.ts              # Role types, roleHome, LEADERSHIP_ROLES
 │   ├── lib/
 │   │   ├── supabase.ts           # Supabase client + types
 │   │   ├── auth.ts               # Auth utilities, FACULTY_DEFAULT_PASSWORD
@@ -368,10 +399,12 @@ ADMIN_NAME=Admin
 ## Security Considerations
 
 - **Passwords**: Hashed with bcrypt (10 salt rounds)
-- **JWT Tokens**: Signed with HMAC-SHA256
-- **HTTP-only Cookies**: Prevent XSS attacks
+- **JWT Tokens**: Signed with HMAC-SHA256; production refuses to boot without `JWT_SECRET`
+- **HTTP-only Cookies**: Prevent XSS attacks; `Secure` flag in production
 - **SameSite=Lax**: CSRF protection
-- **Role-based Access**: Proxy enforces route permissions
+- **Role-based Access**: Proxy enforces route permissions (`src/config/roles.ts`); APIs re-check per endpoint
+- **Input Validation**: Counts bounded 0–1000 server-side and via DB CHECK constraints
+- **Data Integrity**: `counts.department/section` FK to `sections`
 - **Environment Variables**: Secrets never committed to repo
 - **Token Expiry**: 2-day automatic logout
 

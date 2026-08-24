@@ -11,12 +11,14 @@ A website for managing student headcount across departments during Fresher's Day
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | set via `ADMIN_EMAIL` in `.env.local` | set via `ADMIN_PASSWORD` |
+| Leadership | principal@act.edu.in, shhod@act.edu.in, deanadmin@act.edu.in, deanacademics@act.edu.in | freshers@3128 (common, auto-assigned) |
 | Faculty | Admin-created emails | freshers@3128 (common, auto-assigned) |
 
-> Faculty accounts do not require a password entry when created — the admin form only asks for
-> name, email, department and section. The server assigns `freshers@3128` to every new faculty.
-> The admin account is seeded by `supabase/seed.js` using `ADMIN_EMAIL` / `ADMIN_PASSWORD`
-> from `.env.local` — never hardcode real credentials here.
+> Faculty and leadership accounts do not require a password entry — the admin form / seed script
+> auto-assigns `freshers@3128`. The admin account is seeded by `supabase/seed.js` using
+> `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `.env.local` — never hardcode real credentials here.
+> Leadership accounts are seeded by `supabase/seed-leadership.js` (requires
+> `supabase/migration_leadership_roles.sql` to be applied first).
 
 ---
 
@@ -243,6 +245,37 @@ CREATE TABLE sections (
 
 ## Post-Completion Fixes
 
-See `FIX.md` for the Next.js 16 login redirect-loop fix (Route Handlers must read
-cookies from the raw `Cookie` header; `middleware.ts` migrated to `proxy.ts`) and the
-Supabase RLS DELETE policy required for faculty deletion.
+See `FIX.md` for:
+- The Next.js 16 login redirect-loop fix (Route Handlers must read cookies from the raw
+  `Cookie` header; `middleware.ts` migrated to `proxy.ts`)
+- The Supabase RLS DELETE policy required for faculty deletion
+- Security hardening: proxy token extraction, production JWT_SECRET requirement,
+  faculty scoped to own section on `/api/counts`, secure cookie flag, 0–1000 count
+  validation (API + DB CHECK), FK `counts → sections`
+
+---
+
+## Post-Launch Feature: Leadership Roles ✅
+
+Read-only dashboard for leadership, routed by role instead of hardcoded emails.
+
+| Role | Home | Access |
+|------|------|--------|
+| admin | `/dashboard` | Counts editing + faculty CRUD |
+| principal, hod, dean_admission, dean_academics | `/overview` | Read-only counts (all departments) |
+| faculty | `/faculty` | Own section only |
+
+**Files:**
+```
+├── supabase/migration_leadership_roles.sql   # Extends users.role CHECK constraint
+├── supabase/seed-leadership.js               # Seeds the 4 leadership accounts
+├── src/config/roles.ts                       # LEADERSHIP_ROLES, roleHome, canManageFaculty
+├── src/app/overview/page.tsx                 # Read-only leadership dashboard
+```
+
+**Modified:** proxy.ts (role-based routing), CountsTable.tsx (`readOnly` prop),
+login redirect via `roleHome`, `/api/users` GET restricted to admin,
+`/api/counts` POST rejects leadership with 403.
+
+**Gotcha:** the `users` table has no RLS UPDATE policy, so the seed script deletes and
+re-inserts accounts instead of upserting (upserts silently fail on existing rows).

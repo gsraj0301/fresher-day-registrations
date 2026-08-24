@@ -134,8 +134,13 @@ npm run dev
 - Sections are **fixed** (14 pre-seeded), but admin can add more if needed
 - Common faculty password: `freshers@3128` (configurable via `FACULTY_DEFAULT_PASSWORD`)
 - JWT expiry: **2 days**
-- Cookie: httpOnly, SameSite=Lax
+- Cookie: httpOnly, SameSite=Lax, Secure in production
 - Total column = student_count + additional_count (computed/generated in DB)
+- Roles live in DB (`admin`, `principal`, `hod`, `dean_admission`, `dean_academics`, `faculty`) — **no hardcoded emails**; single source of truth is `src/config/roles.ts`
+- Leadership sees read-only `/overview`; proxy routes each role to its home via `roleHome()`
+- Counts bounded 0–1000 (API + DB CHECK); `counts` FK to `sections`
+- Production throws at boot if `JWT_SECRET` missing (dev fallback only)
+- `users` table has no RLS UPDATE policy → seed scripts must delete + insert, never upsert
 
 ---
 
@@ -144,6 +149,7 @@ npm run dev
 The application is live at **https://fresher-s-counter.vercel.app** with:
 - Login page with JWT authentication
 - Admin dashboard with full counts table + faculty management (create + delete)
+- Leadership `/overview` dashboard (read-only counts for principal/HOD/deans)
 - Faculty dashboard with section-specific count editing (with error feedback)
 - Global footer on all pages ("Build by Raj G AI DS II")
 
@@ -151,6 +157,10 @@ The application is live at **https://fresher-s-counter.vercel.app** with:
 - Fixed login redirect loop: Route Handlers must parse the raw `Cookie` header (`request.cookies` throws in Next.js 16); see FIX.md
 - Migrated `middleware.ts` → `proxy.ts` (Next.js 16 convention)
 - Faculty deletion requires a Supabase RLS DELETE policy on `users` (see FIX.md)
+- Security hardening (2026-08-24): proxy uses `getTokenFromRequest`, JWT_SECRET required in production, faculty scoped to own section server-side, secure cookie flag, 0–1000 count limits (API + CHECK constraints), FK `counts → sections` (see FIX.md)
+- Added missing "Create Faculty" trigger button on admin dashboard
+- Sticky footer: pages use `min-h-full` instead of `min-h-screen` so the layout flex chain keeps the footer visible on short pages
+- Leadership seed script rewritten to delete+insert (upsert fails silently without an UPDATE policy)
 
 ### Potential Enhancements:
 - Real-time updates with Supabase subscriptions
