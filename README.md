@@ -4,7 +4,7 @@ A web application for managing student registrations across departments during a
 
 Admins get a live overview of every department and section; faculty sign in and update the count for their assigned section in one place.
 
-**Live: [fresher-s-counter.vercel.app](https://fresher-s-counter.vercel.app)**
+**Live: [fresher-day-registrations.vercel.app](https://fresher-day-registrations.vercel.app)**
 
 ## Features
 
@@ -100,7 +100,7 @@ More detail in [ARCHITECTURE.md](./ARCHITECTURE.md); implementation notes in [PH
 
 ## Deploying to Vercel
 
-**Already deployed ✅ — https://fresher-s-counter.vercel.app** (auto-deploys on push to `main`).
+**Already deployed ✅ — https://fresher-day-registrations.vercel.app** (auto-deploys on push to `main`).
 
 For a fresh deployment:
 

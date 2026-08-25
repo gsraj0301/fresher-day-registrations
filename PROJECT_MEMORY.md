@@ -7,7 +7,7 @@
 
 ## Current Status
 
-**Deployed ✅ — https://fresher-s-counter.vercel.app** (repo: gsraj0301/fresher-s-counter)
+**Deployed ✅ — https://fresher-day-registrations.vercel.app** (repo: gsraj0301/fresher-day-registrations)
 
 | Phase | Status |
 |-------|--------|
@@ -146,7 +146,7 @@ npm run dev
 
 ## All Phases Complete — Deployed!
 
-The application is live at **https://fresher-s-counter.vercel.app** with:
+The application is live at **https://fresher-day-registrations.vercel.app** with:
 - Login page with JWT authentication
 - Admin dashboard with full counts table + faculty management (create + delete)
 - Leadership `/overview` dashboard (read-only counts for principal/HOD/deans)

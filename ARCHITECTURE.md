@@ -321,7 +321,7 @@ CREATE TABLE sections (
 ## Project Structure
 
 ```
-fresher-s-counter/
+fresher-day-registrations/
 ├── .env.local                    # Supabase + JWT credentials (not committed)
 ├── .env.example                  # Template for required env vars
 ├── next.config.ts                # Next.js configuration
@@ -412,9 +412,9 @@ ADMIN_NAME=Admin
 
 ## Deployment
 
-**Status: Deployed ✅ — https://fresher-s-counter.vercel.app**
+**Status: Deployed ✅ — https://fresher-day-registrations.vercel.app**
 
-1. Push code to GitHub repository (gsraj0301/fresher-s-counter)
+1. Push code to GitHub repository (gsraj0301/fresher-day-registrations)
 2. Connect repository to Vercel
 3. Configure environment variables in Vercel dashboard:
    - `NEXT_PUBLIC_SUPABASE_URL`
@@ -423,6 +423,6 @@ ADMIN_NAME=Admin
 4. Deploy automatically on push to main branch
 
 > Vercel's per-deployment URLs (e.g. `<project>-<hash>-<team>.vercel.app`) may be
-> SSO-protected; the production domain `fresher-s-counter.vercel.app` is public.
+> SSO-protected; the production domain `fresher-day-registrations.vercel.app` is public.
 > If Deployment Protection blocks public visitors, disable it under
 > Project → Settings → Deployment Protection.

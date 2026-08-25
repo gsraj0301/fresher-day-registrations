@@ -213,7 +213,7 @@ CREATE TABLE sections (
 
 ## Deployment ✅
 
-**Live: https://fresher-s-counter.vercel.app** (repo: gsraj0301/fresher-s-counter)
+**Live: https://fresher-day-registrations.vercel.app** (repo: gsraj0301/fresher-day-registrations)
 
 1. Push to GitHub
 2. Connect repo to Vercel

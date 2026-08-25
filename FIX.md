@@ -135,8 +135,8 @@ Verified working on production (2026-08-22): create → delete → user gone.
 
 ## Production
 
-- **Live URL:** https://fresher-s-counter.vercel.app
-- **Repo:** https://github.com/gsraj0301/fresher-s-counter
+- **Live URL:** https://fresher-day-registrations.vercel.app
+- **Repo:** https://github.com/gsraj0301/fresher-day-registrations
 - Vercel env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `JWT_SECRET`
 - Per-deployment preview URLs may be SSO-protected ("Protected deployment" 401);
   the production domain above is public.
