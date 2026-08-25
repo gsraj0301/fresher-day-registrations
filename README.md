@@ -1,6 +1,6 @@
-# Freshers' Counter
+# Fresher's Day Registrations
 
-A web application for managing student headcount across departments during a college's Fresher's Day celebrations.
+A web application for managing student registrations across departments during a college's Fresher's Day celebrations.
 
 Admins get a live overview of every department and section; faculty sign in and update the count for their assigned section in one place.
 
@@ -10,7 +10,7 @@ Admins get a live overview of every department and section; faculty sign in and 
 
 - **JWT authentication** — bcrypt-hashed passwords, httpOnly cookie sessions (2-day expiry)
 - **Role-based access** — admins manage everything (counts + faculty CRUD); leadership roles (`principal`, `hod`, `dean_admission`, `dean_academics`) get a read-only `/overview` dashboard; faculty can only edit their own department/section
-- **Live headcount table** — inline editing (Enter to save, Esc to cancel), computed totals, relative "last updated" timestamps
+- **Live registration table** — inline editing (Enter to save, Esc to cancel), computed totals, relative "last updated" timestamps
 - **Faculty management** — create faculty accounts (shared password auto-assigned server-side) and delete them with an inline confirm
 - **10 departments, 14 sections** pre-configured
 

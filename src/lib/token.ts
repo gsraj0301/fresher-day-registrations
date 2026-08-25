@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import type { Role } from '@/config/roles';
 
-const JWT_SECRET = process.env.JWT_SECRET ?? (process.env.NODE_ENV === 'production' ? undefined : 'freshers-day-counter-dev-secret');
+const JWT_SECRET = process.env.JWT_SECRET ?? (process.env.NODE_ENV === 'production' ? undefined : 'fresher-day-registrations-dev-secret');
 const TOKEN_EXPIRY = '2d';
 
 if (!JWT_SECRET) {

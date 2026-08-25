@@ -111,7 +111,7 @@ export default function DashboardPage() {
 
     if (!user) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-full flex items-center justify-center bg-gray-50">
                 <div className="flex items-center gap-3 text-gray-500">
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -124,7 +124,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-full bg-gray-50">
             {/* Header */}
             <header className="sticky top-0 z-20 bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                             </div>
                             <div>
                                 <h1 className="text-base font-semibold text-gray-900 leading-tight">Admin Dashboard</h1>
-                                <p className="text-xs text-gray-500">Fresher&apos;s Day Counter</p>
+                                <p className="text-xs text-gray-500">Fresher&apos;s Day Registrations</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">

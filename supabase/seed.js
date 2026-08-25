@@ -72,7 +72,7 @@ async function verifySections() {
 }
 
 async function main() {
-    console.log('=== College Freshers Day Counter - Seed Script ===\n');
+    console.log('=== College Fresher\'s Day Registrations - Seed Script ===\n');
 
     const adminSeeded = await seedAdmin();
     if (!adminSeeded) {

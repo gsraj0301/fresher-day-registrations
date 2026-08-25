@@ -140,9 +140,9 @@ export default function CountsTable({ readOnly = false }: CountsTableProps) {
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Student Headcount</h2>
+                    <h2 className="text-lg font-semibold text-gray-900">Student Registrations</h2>
                     <p className="text-sm text-gray-500 mt-0.5">
-                        {readOnly ? 'Live headcount across all departments' : 'Click any row to edit counts inline'}
+                        {readOnly ? 'Department wise student count' : 'Click any row to edit counts inline'}
                     </p>
                 </div>
                 <div className="flex items-center gap-2">

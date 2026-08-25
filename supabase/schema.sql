@@ -1,5 +1,5 @@
 -- ============================================
--- College Freshers' Day Counter - Database Schema
+-- College Fresher's Day Registrations - Database Schema
 -- Run this in Supabase SQL Editor
 -- ============================================
 

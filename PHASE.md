@@ -1,8 +1,8 @@
 # PHASE.md — Implementation Plan
 
-## Project: College Freshers' Day Counter
+## Project: College Fresher's Day Registrations
 
-A website for managing student headcount across departments during Fresher's Day celebrations.
+A website for managing student registrations across departments during Fresher's Day celebrations.
 
 ---
 

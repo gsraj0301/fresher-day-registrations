@@ -1,8 +1,8 @@
 # ARCHITECTURE.md — System Architecture
 
-## Project: College Freshers' Day Counter
+## Project: College Fresher's Day Registrations
 
-A web application for managing student headcount across departments during Fresher's Day celebrations.
+A web application for managing student registrations across departments during Fresher's Day celebrations.
 
 ---
 

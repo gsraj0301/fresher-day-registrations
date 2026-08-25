@@ -1,6 +1,6 @@
 # PROJECT_MEMORY.md — Session Memory
 
-## Project: College Freshers' Day Counter
+## Project: College Fresher's Day Registrations
 **Location:** `/home/raj/Documents/Intern projects/fresher's_counter/`
 
 ---

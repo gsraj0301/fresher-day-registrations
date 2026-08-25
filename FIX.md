@@ -107,7 +107,7 @@ Verified working on production (2026-08-22): create → delete → user gone.
 **File:** `src/proxy.ts:6`
 
 ### 2. JWT Secret fallback removed in production
-**Issue:** Hardcoded fallback `'freshers-day-counter-dev-secret'` allowed token forgery if `JWT_SECRET` missing.
+**Issue:** Hardcoded fallback `'fresher-day-registrations-dev-secret'` allowed token forgery if `JWT_SECRET` missing.
 **Fix:** Throw error in production if `JWT_SECRET` not set; warn only in development.
 **File:** `src/lib/token.ts:3-14`
 

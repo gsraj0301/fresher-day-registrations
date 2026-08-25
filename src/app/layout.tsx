@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fresher's Day Counter",
-  description: "College Fresher's Day student count management system",
+  title: "Fresher's Day Registrations",
+  description: "College Fresher's Day student registration system",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
